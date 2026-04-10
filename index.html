@@ -615,6 +615,85 @@
       table { min-width: 600px; }
     }
 
+    /* ── LOGIN SCREEN ── */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #loginScreen.hidden { display: none; }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      width: 100%; max-width: 420px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeUp .4s ease both;
+      position: relative;
+    }
+
+    .login-logo {
+      display: flex; justify-content: center; margin-bottom: 32px;
+    }
+    .login-logo img { height: 64px; width: auto; object-fit: contain; }
+
+    .login-tabs {
+      display: flex; gap: 4px;
+      background: var(--surface2); border-radius: 12px; padding: 4px;
+      margin-bottom: 28px;
+    }
+    .login-tab {
+      flex: 1; padding: 9px; text-align: center;
+      border-radius: 9px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+      color: var(--text-2); background: none; border: none;
+      font-family: var(--font);
+    }
+    .login-tab.active {
+      background: var(--surface); color: var(--purple);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .login-panel { display: none; }
+    .login-panel.active { display: block; }
+
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-2); margin-bottom: 6px; }
+    .login-field input {
+      width: 100%; background: var(--surface2);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; font-family: var(--font); font-size: 14px;
+      color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .login-field input:focus { border-color: var(--purple); box-shadow: 0 0 0 4px rgba(124,58,237,.1); background: var(--surface); }
+
+    .login-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--purple), var(--purple2));
+      color: #fff; border: none; border-radius: 12px;
+      font-family: var(--font); font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(124,58,237,.35);
+      transition: all .18s;
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(124,58,237,.45); }
+    .login-btn:active { transform: scale(.98); }
+    .login-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .login-msg {
+      margin-top: 16px; padding: 12px 14px;
+      border-radius: 10px; font-size: 13px; font-weight: 500;
+      display: none; line-height: 1.5;
+    }
+    .login-msg.error   { background: var(--red-lt);    color: var(--red);    border: 1px solid #fca5a5; display: block; }
+    .login-msg.success { background: var(--green-lt);  color: var(--green);  border: 1px solid #6ee7b7; display: block; }
+    .login-msg.info    { background: var(--purple-lt); color: var(--purple); border: 1px solid var(--border2); display: block; }
+
+    .login-footer { text-align: center; margin-top: 24px; font-size: 12px; color: var(--text-3); }
+
     /* ── RESPONSIVE: MOBILE ── */
     @media (max-width: 600px) {
       /* Header */
@@ -720,6 +799,54 @@
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="logo.png" alt="PSIU!" />
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabEntrar" onclick="switchTab('entrar')">Entrar</button>
+      <button class="login-tab" id="tabCadastrar" onclick="switchTab('cadastrar')">Solicitar Acesso</button>
+    </div>
+
+    <!-- Login -->
+    <div class="login-panel active" id="panelEntrar">
+      <div class="login-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="loginSenha" placeholder="••••••••" onkeydown="if(event.key==='Enter') fazerLogin()" />
+      </div>
+      <button class="login-btn" id="loginBtn" onclick="fazerLogin()">Entrar</button>
+      <div class="login-msg" id="loginMsg"></div>
+    </div>
+
+    <!-- Cadastro -->
+    <div class="login-panel" id="panelCadastrar">
+      <div class="login-field">
+        <label>Nome completo</label>
+        <input type="text" id="regNome" placeholder="Seu nome" />
+      </div>
+      <div class="login-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="regSenha" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <button class="login-btn" id="regBtn" onclick="solicitarAcesso()">Solicitar Acesso</button>
+      <div class="login-msg" id="regMsg"></div>
+    </div>
+
+    <div class="login-footer">Sistema PSIU! — Gestão de Produtos</div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <header>
   <div class="logo logo-upload-wrap" title="Clique para trocar a logo">
@@ -731,6 +858,11 @@
     </div>
   </div>
   <div class="header-right">
+    <span id="headerUser" style="font-size:13px;font-weight:600;color:var(--text-2);display:none"></span>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" onclick="fazerLogout()" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair
+    </button>
     <button class="btn btn-orange" onclick="openCreate()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Novo Produto
@@ -918,6 +1050,104 @@
 </footer>
 
 <script>
+  // ── AUTH ──
+  const WEBHOOK = 'https://rafaelram0s.app.n8n.cloud/webhook/tiendanube-produtos';
+
+  function switchTab(tab) {
+    document.getElementById('tabEntrar').classList.toggle('active', tab === 'entrar');
+    document.getElementById('tabCadastrar').classList.toggle('active', tab === 'cadastrar');
+    document.getElementById('panelEntrar').classList.toggle('active', tab === 'entrar');
+    document.getElementById('panelCadastrar').classList.toggle('active', tab === 'cadastrar');
+  }
+
+  function setLoginMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.className = 'login-msg ' + type;
+    el.textContent = text;
+  }
+
+  async function fazerLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+    if (!email || !senha) { setLoginMsg('loginMsg', 'Preencha email e senha.', 'error'); return; }
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'Entrando...';
+    try {
+      const r = await fetch(WEBHOOK, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ operacao: 'login', email, senha })
+      });
+      const d = await r.json();
+      if (d.erro) { setLoginMsg('loginMsg', d.erro, 'error'); }
+      else {
+        localStorage.setItem('psiu_token', d.token);
+        localStorage.setItem('psiu_nome', d.nome);
+        entrarNoApp(d.nome);
+      }
+    } catch(e) { setLoginMsg('loginMsg', 'Erro de conexão.', 'error'); }
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+
+  async function solicitarAcesso() {
+    const nome  = document.getElementById('regNome').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const senha = document.getElementById('regSenha').value;
+    if (!nome || !email || !senha) { setLoginMsg('regMsg', 'Preencha todos os campos.', 'error'); return; }
+    if (senha.length < 6) { setLoginMsg('regMsg', 'Senha deve ter pelo menos 6 caracteres.', 'error'); return; }
+    const btn = document.getElementById('regBtn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    try {
+      const r = await fetch(WEBHOOK, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ operacao: 'registrar', nome, email, senha })
+      });
+      const d = await r.json();
+      if (d.erro) { setLoginMsg('regMsg', d.erro, 'error'); }
+      else {
+        setLoginMsg('regMsg', '✅ Solicitação enviada! Aguarde a aprovação por email.', 'success');
+        document.getElementById('regNome').value = '';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regSenha').value = '';
+        // Notifica admin via log (email será configurado em seguida)
+        console.log('Aprovar:', d.approve_url);
+      }
+    } catch(e) { setLoginMsg('regMsg', 'Erro de conexão.', 'error'); }
+    btn.disabled = false; btn.textContent = 'Solicitar Acesso';
+  }
+
+  function entrarNoApp(nome) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('headerUser').textContent = '👋 ' + nome;
+    document.getElementById('headerUser').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+  }
+
+  function fazerLogout() {
+    localStorage.removeItem('psiu_token');
+    localStorage.removeItem('psiu_nome');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('headerUser').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = 'none';
+  }
+
+  async function verificarSessao() {
+    const token = localStorage.getItem('psiu_token');
+    const nome  = localStorage.getItem('psiu_nome');
+    if (!token) return;
+    try {
+      const r = await fetch(WEBHOOK, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ operacao: 'verificar_sessao', token })
+      });
+      const d = await r.json();
+      if (d.valido) entrarNoApp(d.nome || nome);
+      else { localStorage.removeItem('psiu_token'); localStorage.removeItem('psiu_nome'); }
+    } catch(e) {
+      // offline: trust cached token
+      if (token && nome) entrarNoApp(nome);
+    }
+  }
+
   // ── STATE ──
   let products = [];
   let categorias = [];
@@ -930,13 +1160,19 @@
   // ── INIT ──
   const DEFAULT_WEBHOOK = 'https://rafaelram0s.app.n8n.cloud/webhook/tiendanube-produtos';
 
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
     if (!webhookURL) {
       webhookURL = DEFAULT_WEBHOOK;
       localStorage.setItem('psiu_webhook', webhookURL);
     }
     document.getElementById('webhookUrl').value = webhookURL;
     updateWebhookBadge();
+
+    // Verifica sessão antes de carregar o app
+    await verificarSessao();
+
+    // Só carrega dados se estiver logado
+    if (!document.getElementById('loginScreen').classList.contains('hidden')) return;
     loadProducts();
     loadCategorias();
   });
