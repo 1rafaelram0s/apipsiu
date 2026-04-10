@@ -475,7 +475,9 @@
 
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin-bottom: 7px; }
-    .form-group input { border-radius: var(--radius-sm); padding: 11px 14px; }
+    .form-group input, .form-group select { border-radius: var(--radius-sm); padding: 11px 14px; }
+    .form-group select { width: 100%; border: 1.5px solid var(--border2); background: var(--surface2); color: var(--text); font-family: var(--font); font-size: 14px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; transition: border-color .2s; }
+    .form-group select:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
@@ -754,6 +756,12 @@
         <input type="number" id="formEstoque" placeholder="0" min="0" />
       </div>
     </div>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="formCategoria">
+        <option value="">Sem categoria</option>
+      </select>
+    </div>
     <div class="form-group" id="sizeGroupWrap">
       <label>Tamanhos / Variações</label>
       <div class="size-chips">
@@ -806,6 +814,7 @@
 <script>
   // ── STATE ──
   let products = [];
+  let categorias = [];
   let filteredProducts = [];
   let sortKey = null, sortDir = 1;
   let editingId = null;
@@ -823,6 +832,7 @@
     document.getElementById('webhookUrl').value = webhookURL;
     updateWebhookBadge();
     loadProducts();
+    loadCategorias();
   });
 
   // ── CONFIG ──
@@ -872,6 +882,21 @@
   }
 
   // ── LOAD ──
+  async function loadCategorias() {
+    try {
+      const data = await apiCall({ operacao: 'listar_categorias' });
+      categorias = data.categorias || [];
+      const sel = document.getElementById('formCategoria');
+      sel.innerHTML = '<option value="">Sem categoria</option>';
+      categorias.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.nome;
+        sel.appendChild(opt);
+      });
+    } catch(e) { /* silently fail */ }
+  }
+
   async function loadProducts() {
     if (!webhookURL) {
       setTableContent(`<tr class="loading-row"><td colspan="6">Configure o webhook para carregar os produtos</td></tr>`);
@@ -1199,6 +1224,7 @@
     document.getElementById('formEstoque').value = '';
     document.getElementById('formId').value = '';
     document.getElementById('sizeGroupWrap').style.display = '';
+    document.getElementById('formCategoria').value = '';
     renderChips();
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('formNome').focus(), 100);
@@ -1227,10 +1253,11 @@
 
   // ── SAVE ──
   async function saveProduct() {
-    const nome    = document.getElementById('formNome').value.trim();
-    const preco   = document.getElementById('formPreco').value;
-    const estoque = document.getElementById('formEstoque').value;
-    const id      = document.getElementById('formId').value;
+    const nome       = document.getElementById('formNome').value.trim();
+    const preco      = document.getElementById('formPreco').value;
+    const estoque    = document.getElementById('formEstoque').value;
+    const id         = document.getElementById('formId').value;
+    const categoriaId = document.getElementById('formCategoria').value;
 
     if (!nome) { toast('Informe o nome do produto', 'error'); return; }
 
@@ -1250,6 +1277,7 @@
         if (preco) body.preco = preco;
         if (estoque !== '') body.estoque = parseInt(estoque);
         if (selectedSizes.length) body.variacoes = selectedSizes;
+        if (categoriaId) body.categoria_id = parseInt(categoriaId);
         await apiCall(body);
         toast('Produto criado!', 'success');
       }
