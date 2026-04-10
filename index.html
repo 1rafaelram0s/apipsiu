@@ -831,18 +831,7 @@
   }
 
   function updateWebhookBadge() {
-    const label = document.getElementById('webhookLabel');
-    const dot = document.getElementById('statusDot');
-    if (webhookURL) {
-      try {
-        const host = new URL(webhookURL).hostname;
-        label.textContent = host;
-      } catch { label.textContent = 'configurado'; }
-      dot.className = 'status-dot connected';
-    } else {
-      label.textContent = 'configurar';
-      dot.className = 'status-dot';
-    }
+    // badge removido — nada a atualizar
   }
 
   async function testConnection() {
@@ -850,10 +839,10 @@
     toast('Testando conexão...', 'info');
     try {
       await apiCall({ operacao: 'listar', por_pagina: 1 });
-      document.getElementById('statusDot').className = 'status-dot connected';
+      // status dot removed
       toast('Conexão OK!', 'success');
     } catch(e) {
-      document.getElementById('statusDot').className = 'status-dot error';
+      // status dot removed
       toast('Falha na conexão: ' + e.message, 'error');
     }
   }
@@ -893,7 +882,7 @@
       filterProducts();
     } catch(e) {
       setTableContent(`<tr class="loading-row"><td colspan="6" style="color:var(--red)">Erro ao carregar: ${e.message}</td></tr>`);
-      document.getElementById('statusDot').className = 'status-dot error';
+      // status dot removed
     }
   }
 
