@@ -1164,34 +1164,12 @@
 
   // ── SIZE CHIPS ──
   let selectedSizes = [];
+  const ALL_SIZES = ['P','M','G','GG','XG','Único','34','35','36','37','38','39','40','41','42','43','44'];
 
   function toggleSize(size) {
     if (size === 'todos') {
-      const all = ['P','M','G','GG','XG'];
-      const allSelected = all.every(s => selectedSizes.includes(s));
-      selectedSizes = allSelected ? [] : [...all];
-    } else {
-      if (selectedSizes.includes(size)) {
-        selectedSizes = selectedSizes.filter(s => s !== size);
-      } else {
-        selectedSizes = selectedSizes.filter(s => s !== 'Único');
-        selectedSizes.push(size);
-      }
-      if (size === 'Único') {
-        selectedSizes = selectedSizes.includes('Único') ? [] : ['Único'];
-        // toggle
-        if (!selectedSizes.length) { selectedSizes = ['Único']; } else { selectedSizes = []; }
-      }
-    }
-    renderChips();
-  }
-
-  // Corrigir lógica do Único
-  function toggleSize(size) {
-    if (size === 'todos') {
-      const all = ['P','M','G','GG','XG'];
-      const allSelected = all.every(s => selectedSizes.includes(s));
-      selectedSizes = allSelected ? [] : [...all];
+      const allSelected = ALL_SIZES.every(s => selectedSizes.includes(s));
+      selectedSizes = allSelected ? [] : [...ALL_SIZES];
     } else if (size === 'Único') {
       selectedSizes = selectedSizes.includes('Único') ? [] : ['Único'];
     } else {
@@ -1203,11 +1181,11 @@
   }
 
   function renderChips() {
-    const all = ['P','M','G','GG','XG'];
-    const allSelected = all.every(s => selectedSizes.includes(s));
+    const allSelected = ALL_SIZES.every(s => selectedSizes.includes(s));
     document.getElementById('chip-todos').classList.toggle('selected', allSelected);
-    ['P','M','G','GG','XG','Único'].forEach(s => {
-      document.getElementById('chip-' + s).classList.toggle('selected', selectedSizes.includes(s));
+    ALL_SIZES.forEach(s => {
+      const el = document.getElementById('chip-' + s);
+      if (el) el.classList.toggle('selected', selectedSizes.includes(s));
     });
   }
 
