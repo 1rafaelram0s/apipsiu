@@ -569,11 +569,12 @@
     }
 
     .footer-dev-logo {
-      height: 28px; width: auto; opacity: .7;
-      transition: opacity .2s;
+      height: 36px; width: auto; max-width: 200px;
+      opacity: .65; filter: grayscale(20%);
+      transition: opacity .2s, filter .2s;
     }
 
-    .footer-dev-logo:hover { opacity: 1; }
+    .footer-dev-logo:hover { opacity: 1; filter: none; }
 
     /* ── LOGO UPLOAD ── */
     .logo-upload-wrap {
@@ -622,10 +623,6 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="webhook-badge" id="webhookBadge" onclick="toggleConfig()">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="webhookLabel">configurar</span>
-    </div>
     <button class="btn btn-orange" onclick="openCreate()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Novo Produto
@@ -790,21 +787,7 @@
     <span class="footer-rights">2026. Todos os direitos reservados.</span>
   </div>
   <div class="footer-dev">
-    <span class="footer-dev-label">Desenvolvido por</span>
-    <svg xmlns="http://www.w3.org/2000/svg" class="footer-dev-logo" viewBox="0 0 180 40" aria-label="Creative UP">
-      <defs>
-        <linearGradient id="cupGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#7c3aed"/>
-          <stop offset="100%" stop-color="#f97316"/>
-        </linearGradient>
-      </defs>
-      <!-- C icon -->
-      <rect x="0" y="8" width="24" height="24" rx="6" fill="url(#cupGrad)"/>
-      <path d="M16 14a6 6 0 1 0 0 12" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-      <!-- wordmark -->
-      <text x="32" y="27" font-family="'Plus Jakarta Sans',sans-serif" font-weight="700" font-size="16" fill="#1e1a3c" letter-spacing="-0.3">Creative</text>
-      <text x="118" y="27" font-family="'Plus Jakarta Sans',sans-serif" font-weight="800" font-size="16" fill="#7c3aed" letter-spacing="-0.3">UP</text>
-    </svg>
+    <img src="creativeup.png" alt="Creative UP Soluções Empresariais" class="footer-dev-logo" />
   </div>
 </footer>
 
