@@ -393,7 +393,7 @@
 
     .variants-wrap {
       display: none;
-      padding: 0 16px 12px 64px;
+      padding: 8px 16px 14px 56px;
     }
 
     .variants-wrap.open { display: block; }
@@ -864,17 +864,17 @@
     <table>
       <thead>
         <tr>
-          <th style="width:16px"></th>
+          <th style="width:32px"></th>
           <th>Produto</th>
-          <th class="sortable" onclick="sortBy('price')">Preço ↕</th>
-          <th class="sortable" onclick="sortBy('stock')">Estoque ↕</th>
+          <th class="sortable" onclick="sortBy('preco')">Preço ↕</th>
+          <th class="sortable" onclick="sortBy('estoque')">Estoque ↕</th>
           <th>ID</th>
           <th style="width:120px">Ações</th>
         </tr>
       </thead>
       <tbody id="tableBody">
         <tr class="loading-row">
-          <td colspan="5">
+          <td colspan="6">
             <span class="spinner"></span>
             Configure o webhook para carregar os produtos
           </td>
@@ -1004,7 +1004,7 @@
       setTableContent(`<tr class="loading-row"><td colspan="5">Configure o webhook para carregar os produtos</td></tr>`);
       return;
     }
-    setTableContent(`<tr class="loading-row"><td colspan="5"><span class="spinner"></span> Carregando produtos...</td></tr>`);
+    setTableContent(`<tr class="loading-row"><td colspan="6"><span class="spinner"></span> Carregando produtos...</td></tr>`);
     try {
       const data = await apiCall({ operacao: 'listar', por_pagina: 200 });
       const list = data.produtos || data || [];
@@ -1020,7 +1020,7 @@
       updateStats();
       filterProducts();
     } catch(e) {
-      setTableContent(`<tr class="loading-row"><td colspan="5" style="color:var(--red)">Erro ao carregar: ${e.message}</td></tr>`);
+      setTableContent(`<tr class="loading-row"><td colspan="6" style="color:var(--red)">Erro ao carregar: ${e.message}</td></tr>`);
       document.getElementById('statusDot').className = 'status-dot error';
     }
   }
@@ -1139,11 +1139,13 @@
       const variantsRow = variantRowHTML(p);
 
       return `<tr style="animation-delay:${i * 0.03}s" data-id="${p.id}">
+        <td style="padding:12px 8px 12px 16px">
+          <button class="expand-btn" id="expand-${p.id}" onclick="toggleVariants(${p.id})" title="Ver variações">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </td>
         <td>
           <div class="product-cell">
-            <button class="expand-btn" id="expand-${p.id}" onclick="toggleVariants(${p.id})" title="Ver variações">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
             <div class="thumb">${img}</div>
             <div>
               <div class="product-name${!p.nome ? ' no-name' : ''}">${p.nome ? esc(p.nome) : '(sem nome)'}</div>
@@ -1164,7 +1166,7 @@
         </td>
       </tr>
       <tr class="variants-row" id="variants-row-${p.id}">
-        <td colspan="5">
+        <td colspan="6" style="padding:0">
           <div class="variants-wrap" id="variants-wrap-${p.id}">
             ${variantsRow}
           </div>
@@ -1257,7 +1259,7 @@
     displayEl.innerHTML = `<span class="saving-spinner"></span>`;
 
     try {
-      const body = { operacao: 'atualizar', produto_id: productId };
+      const body = { operacao: 'atualizar', produto_id: productId, variant_id: variantId };
       if (field === 'preco') body.preco = val;
       if (field === 'estoque') body.estoque = parseInt(val);
       await apiCall(body);
