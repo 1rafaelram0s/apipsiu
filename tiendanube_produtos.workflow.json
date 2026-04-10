@@ -1,0 +1,446 @@
+{
+  "name": "Tiendanube - Gerenciamento de Produtos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tiendanube-produtos",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "tiendanube-produtos"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.operacao }}",
+                    "rightValue": "listar",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "listar"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.operacao }}",
+                    "rightValue": "buscar",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "buscar"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.operacao }}",
+                    "rightValue": "criar",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "criar"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.operacao }}",
+                    "rightValue": "atualizar",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "atualizar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "switch-operacao",
+      "name": "Switch Operação",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "per_page", "value": "={{ $json.body.por_pagina || 50 }}" },
+            { "name": "page", "value": "={{ $json.body.pagina || 1 }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-listar",
+      "name": "Listar Produtos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 100],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products/{{ $json.body.produto_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "http-buscar",
+      "name": "Buscar Produto por ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 240],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"name\": { \"pt\": \"{{ $json.body.nome }}\" },\n  \"variants\": [\n    {\n      \"price\": \"{{ $json.body.preco }}\",\n      \"stock\": {{ $json.body.estoque }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "http-criar",
+      "name": "Criar Produto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 380],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products/{{ $json.body.produto_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ (() => {\n  const body = {};\n  if ($json.body.nome) body.name = { pt: $json.body.nome };\n  return JSON.stringify(body);\n})() }}",
+        "options": {}
+      },
+      "id": "http-atualizar-produto",
+      "name": "Atualizar Nome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 520],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "combinator": "or",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.preco }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            },
+            {
+              "leftValue": "={{ $json.body.estoque }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "if-variante",
+      "name": "Tem Preço ou Estoque?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [960, 520]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products/{{ $json.body.produto_id }}/variants",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "http-get-variantes",
+      "name": "Buscar Variantes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 460],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.tiendanube.com/v1/{{ $vars.TIENDANUBE_USER_ID }}/products/{{ $('Switch Operação').item.json.body.produto_id }}/variants/{{ $json[0].id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ (() => {\n  const webhookData = $('Switch Operação').item.json.body;\n  const body = {};\n  if (webhookData.preco !== undefined) body.price = webhookData.preco;\n  if (webhookData.estoque !== undefined) body.stock = webhookData.estoque;\n  return JSON.stringify(body);\n})() }}",
+        "options": {}
+      },
+      "id": "http-atualizar-variante",
+      "name": "Atualizar Preço/Estoque",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1400, 460],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiendanube-auth",
+          "name": "Tiendanube Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "resp-listar", "name": "sucesso", "value": true, "type": "boolean" },
+            { "id": "resp-listar-2", "name": "operacao", "value": "listar", "type": "string" },
+            { "id": "resp-listar-3", "name": "total", "value": "={{ $json.length }}", "type": "number" },
+            { "id": "resp-listar-4", "name": "produtos", "value": "={{ $json }}", "type": "array" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-resp-listar",
+      "name": "Formatar Resposta Listar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [960, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "resp-buscar-1", "name": "sucesso", "value": true, "type": "boolean" },
+            { "id": "resp-buscar-2", "name": "operacao", "value": "buscar", "type": "string" },
+            { "id": "resp-buscar-3", "name": "produto", "value": "={{ $json }}", "type": "object" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-resp-buscar",
+      "name": "Formatar Resposta Buscar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [960, 240]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "resp-criar-1", "name": "sucesso", "value": true, "type": "boolean" },
+            { "id": "resp-criar-2", "name": "operacao", "value": "criar", "type": "string" },
+            { "id": "resp-criar-3", "name": "produto_criado", "value": "={{ $json }}", "type": "object" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-resp-criar",
+      "name": "Formatar Resposta Criar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [960, 380]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "resp-atualizar-1", "name": "sucesso", "value": true, "type": "boolean" },
+            { "id": "resp-atualizar-2", "name": "operacao", "value": "atualizar", "type": "string" },
+            { "id": "resp-atualizar-3", "name": "produto_atualizado", "value": "={{ $json }}", "type": "object" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-resp-atualizar",
+      "name": "Formatar Resposta Atualizar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1620, 460]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "webhook-response",
+      "name": "Resposta Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1840, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "err-1", "name": "sucesso", "value": false, "type": "boolean" },
+            { "id": "err-2", "name": "erro", "value": "Operação inválida. Use: listar, buscar, criar ou atualizar", "type": "string" },
+            { "id": "err-3", "name": "operacoes_validas", "value": ["listar", "buscar", "criar", "atualizar"], "type": "array" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-erro",
+      "name": "Erro - Operação Inválida",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [700, 680]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Switch Operação", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch Operação": {
+      "main": [
+        [{ "node": "Listar Produtos", "type": "main", "index": 0 }],
+        [{ "node": "Buscar Produto por ID", "type": "main", "index": 0 }],
+        [{ "node": "Criar Produto", "type": "main", "index": 0 }],
+        [{ "node": "Atualizar Nome", "type": "main", "index": 0 }]
+      ]
+    },
+    "Listar Produtos": {
+      "main": [
+        [{ "node": "Formatar Resposta Listar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Produto por ID": {
+      "main": [
+        [{ "node": "Formatar Resposta Buscar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Criar Produto": {
+      "main": [
+        [{ "node": "Formatar Resposta Criar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Atualizar Nome": {
+      "main": [
+        [{ "node": "Tem Preço ou Estoque?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Tem Preço ou Estoque?": {
+      "main": [
+        [{ "node": "Buscar Variantes", "type": "main", "index": 0 }],
+        [{ "node": "Formatar Resposta Atualizar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Buscar Variantes": {
+      "main": [
+        [{ "node": "Atualizar Preço/Estoque", "type": "main", "index": 0 }]
+      ]
+    },
+    "Atualizar Preço/Estoque": {
+      "main": [
+        [{ "node": "Formatar Resposta Atualizar", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Resposta Listar": {
+      "main": [
+        [{ "node": "Resposta Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Resposta Buscar": {
+      "main": [
+        [{ "node": "Resposta Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Resposta Criar": {
+      "main": [
+        [{ "node": "Resposta Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Formatar Resposta Atualizar": {
+      "main": [
+        [{ "node": "Resposta Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Erro - Operação Inválida": {
+      "main": [
+        [{ "node": "Resposta Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    { "createdAt": "2026-04-09", "updatedAt": "2026-04-09", "id": "tiendanube", "name": "Tiendanube" }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2026-04-09T00:00:00.000Z",
+  "versionId": "1"
+}
