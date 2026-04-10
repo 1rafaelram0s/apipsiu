@@ -592,7 +592,7 @@
     }
 
     .logo-img-preview {
-      height: 36px; width: auto; max-width: 140px;
+      height: 48px; width: auto; max-width: 160px;
       object-fit: contain; border-radius: 6px;
       display: none;
     }
@@ -616,8 +616,8 @@
 <header>
   <div class="logo logo-upload-wrap" title="Clique para trocar a logo">
     <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)" />
-    <img id="logoPreview" class="logo-img-preview" alt="Logo" />
-    <div class="logo-placeholder" id="logoPlaceholder">
+    <img id="logoPreview" class="logo-img-preview" alt="Logo" style="display:block" src="logo.png" />
+    <div class="logo-placeholder" id="logoPlaceholder" style="display:none">
       <div class="logo-icon">🛍</div>
       PSIU<span>!</span>
     </div>
@@ -1311,15 +1311,11 @@
     reader.readAsDataURL(file);
   }
 
-  // restore logo on load
+  // restore custom logo on load (if user uploaded one)
   (function() {
     const saved = localStorage.getItem('psiu_logo');
     if (saved) {
-      const preview = document.getElementById('logoPreview');
-      const placeholder = document.getElementById('logoPlaceholder');
-      preview.src = saved;
-      preview.style.display = 'block';
-      placeholder.style.display = 'none';
+      document.getElementById('logoPreview').src = saved;
     }
   })();
 </script>
