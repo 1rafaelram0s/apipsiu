@@ -479,6 +479,18 @@
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
+    .size-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .size-chip {
+      padding: 6px 14px; border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--text-2);
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .15s; user-select: none;
+    }
+    .size-chip:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-lt); }
+    .size-chip.selected { border-color: var(--purple); color: var(--purple); background: var(--purple-lt); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+    .size-chip.all-chip.selected { border-color: var(--orange); color: var(--orange); background: var(--orange-lt); box-shadow: 0 0 0 3px rgba(249,115,22,.12); }
+
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
 
     /* ── TOASTS ── */
@@ -609,7 +621,8 @@
   <div class="toolbar">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" class="search-input" id="searchInput" placeholder="Buscar produtos... (⌘K)" oninput="filterProducts()" />
+      <span style="position:absolute;left:42px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:var(--text-2);pointer-events:none;user-select:none" id="searchLabel">Buscar</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="" oninput="filterProducts(); document.getElementById('searchLabel').style.display=this.value?'none':'block'" style="padding-left:88px" />
     </div>
     <button class="btn" onclick="loadProducts()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -666,8 +679,20 @@
         <input type="number" id="formPreco" placeholder="0,00" step="0.01" min="0" />
       </div>
       <div class="form-group">
-        <label>Estoque</label>
+        <label>Estoque por variação</label>
         <input type="number" id="formEstoque" placeholder="0" min="0" />
+      </div>
+    </div>
+    <div class="form-group" id="sizeGroupWrap">
+      <label>Tamanhos / Variações</label>
+      <div class="size-chips">
+        <span class="size-chip all-chip" onclick="toggleSize('todos')" id="chip-todos">Todos</span>
+        <span class="size-chip" onclick="toggleSize('P')"  id="chip-P">P</span>
+        <span class="size-chip" onclick="toggleSize('M')"  id="chip-M">M</span>
+        <span class="size-chip" onclick="toggleSize('G')"  id="chip-G">G</span>
+        <span class="size-chip" onclick="toggleSize('GG')" id="chip-GG">GG</span>
+        <span class="size-chip" onclick="toggleSize('XG')" id="chip-XG">XG</span>
+        <span class="size-chip" onclick="toggleSize('Único')" id="chip-Único">Único</span>
       </div>
     </div>
     <input type="hidden" id="formId" />
@@ -1054,14 +1079,66 @@
     document.getElementById('tableBody').innerHTML = html;
   }
 
+  // ── SIZE CHIPS ──
+  let selectedSizes = [];
+
+  function toggleSize(size) {
+    if (size === 'todos') {
+      const all = ['P','M','G','GG','XG'];
+      const allSelected = all.every(s => selectedSizes.includes(s));
+      selectedSizes = allSelected ? [] : [...all];
+    } else {
+      if (selectedSizes.includes(size)) {
+        selectedSizes = selectedSizes.filter(s => s !== size);
+      } else {
+        selectedSizes = selectedSizes.filter(s => s !== 'Único');
+        selectedSizes.push(size);
+      }
+      if (size === 'Único') {
+        selectedSizes = selectedSizes.includes('Único') ? [] : ['Único'];
+        // toggle
+        if (!selectedSizes.length) { selectedSizes = ['Único']; } else { selectedSizes = []; }
+      }
+    }
+    renderChips();
+  }
+
+  // Corrigir lógica do Único
+  function toggleSize(size) {
+    if (size === 'todos') {
+      const all = ['P','M','G','GG','XG'];
+      const allSelected = all.every(s => selectedSizes.includes(s));
+      selectedSizes = allSelected ? [] : [...all];
+    } else if (size === 'Único') {
+      selectedSizes = selectedSizes.includes('Único') ? [] : ['Único'];
+    } else {
+      selectedSizes = selectedSizes.filter(s => s !== 'Único');
+      if (selectedSizes.includes(size)) selectedSizes = selectedSizes.filter(s => s !== size);
+      else selectedSizes.push(size);
+    }
+    renderChips();
+  }
+
+  function renderChips() {
+    const all = ['P','M','G','GG','XG'];
+    const allSelected = all.every(s => selectedSizes.includes(s));
+    document.getElementById('chip-todos').classList.toggle('selected', allSelected);
+    ['P','M','G','GG','XG','Único'].forEach(s => {
+      document.getElementById('chip-' + s).classList.toggle('selected', selectedSizes.includes(s));
+    });
+  }
+
   // ── MODAL ──
   function openCreate() {
     editingId = null;
+    selectedSizes = [];
     document.getElementById('modalTitle').textContent = 'Novo Produto';
     document.getElementById('formNome').value = '';
     document.getElementById('formPreco').value = '';
     document.getElementById('formEstoque').value = '';
     document.getElementById('formId').value = '';
+    document.getElementById('sizeGroupWrap').style.display = '';
+    renderChips();
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('formNome').focus(), 100);
   }
@@ -1070,11 +1147,14 @@
     const p = products.find(x => x.id == id);
     if (!p) return;
     editingId = id;
+    selectedSizes = [];
     document.getElementById('modalTitle').textContent = 'Editar Produto';
     document.getElementById('formNome').value = p.nome;
     document.getElementById('formPreco').value = p.preco;
     document.getElementById('formEstoque').value = p.estoque ?? '';
     document.getElementById('formId').value = id;
+    document.getElementById('sizeGroupWrap').style.display = 'none';
+    renderChips();
     document.getElementById('modalOverlay').classList.add('open');
     setTimeout(() => document.getElementById('formNome').focus(), 100);
   }
@@ -1108,6 +1188,7 @@
         const body = { operacao: 'criar', nome };
         if (preco) body.preco = preco;
         if (estoque !== '') body.estoque = parseInt(estoque);
+        if (selectedSizes.length) body.variacoes = selectedSizes;
         await apiCall(body);
         toast('Produto criado!', 'success');
       }
